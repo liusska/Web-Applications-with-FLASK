@@ -8,7 +8,7 @@ from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from marshmallow import Schema, fields, validate, ValidationError
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Forbidden
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 from marshmallow_enum import EnumField
@@ -27,6 +27,30 @@ api = Api(app)
 migrate = Migrate(app, db)
 
 auth = HTTPTokenAuth(scheme='Bearer')
+
+
+def permission_required(permission):
+    def wrapper(func):
+        def decorated_functon(*args, **kwargs):
+            if user.role == permission:
+                return func(*args, **kwargs)
+            raise Forbidden('You have no access to this resource')
+        return decorated_functon
+    return wrapper
+
+
+def validate_data(schema_name):
+    def wrapper(func):
+        def decorated_function(*args, **kwargs):
+            data = request.get_json()
+            schema = schema_name()
+            errors = schema.validate(data)
+            if errors:
+                raise BadRequest(f'Invalid data fields - {", ".join(errors)}')
+            return func(*args, **kwargs)
+        return decorated_function
+    return wrapper
+
 
 
 @auth.verify_token
@@ -126,23 +150,20 @@ class UserSignUpSchema(Schema):
 
 
 class SignUp(Resource):
+    @validate_data(UserSignUpSchema)
     def post(self):
         data = request.get_json()
-        schema = UserSignUpSchema()
-        errors = schema.validate(data)
-        if not errors:
-            try:
-                data["password"] = generate_password_hash(password=data['password'], method='sha256')
-                user = User(**data)
-                db.session.add(user)
-                db.session.commit()
-            except Exception as ex:
-                if "UniqueViolation" in str(ex):
-                    raise BadRequest("This email is already in use")
-                raise BadRequest("invalid data")
-            token = user.encode_token()
-            return {"token": token}, 201
-        raise BadRequest(f'Invalid data - fields - {", ".join(errors)}')
+        try:
+            data["password"] = generate_password_hash(password=data['password'], method='sha256')
+            user = User(**data)
+            db.session.add(user)
+            db.session.commit()
+        except Exception as ex:
+            if "UniqueViolation" in str(ex):
+                raise BadRequest("This email is already in use")
+            raise BadRequest("invalid data")
+        token = user.encode_token()
+        return {"token": token}, 201
 
 
 class ClothesOutSchema(Schema):
@@ -157,6 +178,7 @@ class ClothesOutSchema(Schema):
 
 class ClothesResource(Resource):
     @auth.login_required
+    @permission_required(UserRoleEnum.admin)
     def get(self):
         # user = auth.current_user()
         clothes = Clothes.query.all()
