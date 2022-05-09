@@ -52,7 +52,6 @@ def validate_data(schema_name):
     return wrapper
 
 
-
 @auth.verify_token
 def verify_token(token):
     try:
@@ -90,27 +89,27 @@ class User(db.Model):
     def decode_token(token):
         try:
             data = jwt.decode(token, key=config("JWT_KEY"), algorithms=["HS256"])
-            return data["sub"]
+            return data['sub']
         except jwt.InvalidTokenError:
-            raise BadRequest("Invalid token")
+            raise BadRequest('Invalid token')
         except jwt.ExpiredSignatureError:
-            raise BadRequest("Token expired")
+            raise BadRequest('Token expired')
 
 
 class ColorEnum(enum.Enum):
-    pink = "pink"
-    black = "black"
-    white = "white"
-    yellow = "yellow"
+    pink = 'pink'
+    black = 'black'
+    white = 'white'
+    yellow = 'yellow'
 
 
 class SizeEnum(enum.Enum):
-    xs = "xs"
-    s = "s"
-    m = "m"
-    l = "l"
-    xl = "xl"
-    xll = "xll"
+    xs = 'xs'
+    s = 's'
+    m = 'm'
+    l = 'l'
+    xl = 'xl'
+    xll = 'xll'
 
 
 class Clothes(db.Model):
@@ -135,7 +134,7 @@ def validate_full_name(value):
     try:
         first_name, last_name = value.split()
     except:
-        raise ValidationError("Full name should contain first name and last name")
+        raise ValidationError('Full name should contain first name and last name')
 
 
 class UserSignUpSchema(Schema):
@@ -159,11 +158,11 @@ class SignUp(Resource):
             db.session.add(user)
             db.session.commit()
         except Exception as ex:
-            if "UniqueViolation" in str(ex):
-                raise BadRequest("This email is already in use")
-            raise BadRequest("invalid data")
+            if 'UniqueViolation'in str(ex):
+                raise BadRequest('This email is already in use')
+            raise BadRequest('invalid data')
         token = user.encode_token()
-        return {"token": token}, 201
+        return {'token': token}, 201
 
 
 class ClothesOutSchema(Schema):
