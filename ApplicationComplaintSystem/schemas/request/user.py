@@ -9,22 +9,12 @@ class BaseUserSchema(Schema):
     )
 
 
+class ComplainerLoginRequestSchema(BaseUserSchema):
+    pass
+
+
 class ComplainerRegisterRequestSchema(BaseUserSchema):
-    first_name = fields.String(
-        required=True,
-        validate=validate.Length(min=2, max=255)
-    )
-    last_name = fields.String(
-        required=True,
-        validate=validate.Length(min=2, max=255)
-    )
-
-    phone = fields.String(
-        required=True,
-        validate=validate.Length(min=13, max=13)
-    )
-
-    iban = fields.String(
-        required=True,
-        validate=validate.Length(min=22, max=22)
-    )
+    first_name = fields.String(required=True, validate=validate.Length(min=2, max=255))
+    last_name = fields.String(required=True, validate=validate.Length(min=2, max=255))
+    phone = fields.String(required=True, validate=validate.Length(min=13, max=13))
+    iban = fields.String(required=True, validate=validate.Length(min=22, max=22))

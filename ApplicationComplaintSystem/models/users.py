@@ -10,7 +10,8 @@ class BaseUserModel(db.Model):
     first_name = db.Column(db.String(255), nullable=False)
     last_name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False, unique=True)
-    phone = db.Column(sb.String(13), nullable=False)
+    phone = db.Column(db.String(13), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
 
 
 class ComplainerModel(BaseUserModel):

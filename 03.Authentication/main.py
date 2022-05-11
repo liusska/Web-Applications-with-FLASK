@@ -158,7 +158,7 @@ class SignUp(Resource):
             db.session.add(user)
             db.session.commit()
         except Exception as ex:
-            if 'UniqueViolation'in str(ex):
+            if 'UniqueViolation' in str(ex):
                 raise BadRequest('This email is already in use')
             raise BadRequest('invalid data')
         token = user.encode_token()
